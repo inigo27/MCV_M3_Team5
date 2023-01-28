@@ -1,7 +1,5 @@
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, InceptionResNetV2
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.callbacks import ModelCheckpoint
-import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
@@ -9,24 +7,23 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import TensorBoard
-from tensorflow.keras import optimizers
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
 #train_data_dir='/ghome/mcv/datasets/MIT_split/train'
-train_data_dir = "../W3/MIT_split/train/"
+train_data_dir = "MIT_small_train_1/train"
 #val_data_dir='/ghome/mcv/datasets/MIT_split/test'
-test_data_dir = "../W3/MIT_split/test"
+test_data_dir = "MIT_small_train_1/test"
 #test_data_dir='/ghome/mcv/datasets/MIT_split/test'
-
 img_width = 299
 img_height= 299
 batch_size=32
 number_of_epoch=20
-validation_samples=807
-MODEL_FNAME = "best_model.h5"
+validation_samples=2288
+
+
 
 # create the base pre-trained model
 base_model = InceptionResNetV2(weights='imagenet')
@@ -40,11 +37,10 @@ plot_model(model, to_file='modelInceptionResNetV2changed.png', show_shapes=True,
 for layer in base_model.layers:
     layer.trainable = False
     
-
-opt = optimizers.Adam(learning_rate=0.01)
-model.compile(loss='categorical_crossentropy',optimizer=opt, metrics=['accuracy'])
-#for layer in model.layers:
-#    print(layer.name, layer.trainable)
+    
+model.compile(loss='categorical_crossentropy',optimizer='sgd', metrics=['accuracy'])
+for layer in model.layers:
+    print(layer.name, layer.trainable)
 
 #preprocessing_function=preprocess_input,
 datagen = ImageDataGenerator(featurewise_center=False,
@@ -74,17 +70,12 @@ test_generator = datagen.flow_from_directory(test_data_dir,
         batch_size=batch_size,
         class_mode='categorical')
 
-# To save the best model
-checkpointer = ModelCheckpoint(filepath=MODEL_FNAME, verbose=1, save_best_only=True, 
-                               monitor='val_accuracy')
-
 history=model.fit(train_generator,
-        steps_per_epoch=(int(1881//batch_size)+1),
+        steps_per_epoch=(int(400//batch_size)+1),
         epochs=number_of_epoch,
         validation_data=test_generator,
-        validation_steps= (int(validation_samples//batch_size)+1), callbacks=[checkpointer])
+        validation_steps= (int(validation_samples//batch_size)+1), callbacks=[])
 
-model.load_weights(MODEL_FNAME)
 
 result = model.evaluate(test_generator)
 print( result)

@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 
 
 #train_data_dir='/ghome/mcv/datasets/MIT_split/train'
-train_data_dir = "../W3/MIT_split/train/"
+train_data_dir = "./MIT_small_train_1/train/"
 #val_data_dir='/ghome/mcv/datasets/MIT_split/test'
-test_data_dir = "../W3/MIT_split/test"
+test_data_dir = "./MIT_small_train_1/test"
 #test_data_dir='/ghome/mcv/datasets/MIT_split/test'
 
 img_width = 299
@@ -20,7 +20,7 @@ batch_size=32
 number_of_epoch=50
 validation_samples=2288
 MODEL_FNAME = "best_model.h5"
-initial_model = "./RemovedIntermediateLayers/36/initialRemoved.h5"
+initial_model = "./models/35_1_not_trained.h5"
 
 WIDTH_SHIFT = False
 HEIGHT_SHIFT = False
@@ -29,12 +29,12 @@ VERTICAL_FLIP = False
 ROTATION = False
 BRIGHT = False
 ZOOM = False
-SHEAR = False
+SHEAR = True
 
 # create the base pre-trained model
 model = load_model(initial_model)
 
-opt = optimizers.Adam(learning_rate=0.001)
+opt = optimizers.Adam(learning_rate=0.0001)
 model.compile(loss='categorical_crossentropy',optimizer=opt, metrics=['accuracy'])
 
 model.summary()
@@ -92,16 +92,37 @@ datagen = ImageDataGenerator(featurewise_center=False,
     vertical_flip=vertical_flip,
     rescale=None)
 
+datagenTest = ImageDataGenerator(featurewise_center=False,
+    samplewise_center=False,
+    featurewise_std_normalization=False,
+    samplewise_std_normalization=False,
+	preprocessing_function=preprocess_input,
+    rotation_range=0.,
+    width_shift_range=0.,
+    height_shift_range=0.,
+    shear_range=0.,
+    zoom_range=0.,
+    channel_shift_range=0.,
+    fill_mode='nearest',
+    cval=0.,
+    horizontal_flip=False,
+    vertical_flip=False,
+    rescale=None)
+
 train_generator = datagen.flow_from_directory(train_data_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
         class_mode='categorical')
 
-test_generator = datagen.flow_from_directory(test_data_dir,
+test_generator = datagenTest.flow_from_directory(test_data_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
         class_mode='categorical')
-
+#for i in range(5):
+#    X,y = train_generator.next()
+#    a = X[0]
+#    plt.imshow(a.astype(np.uint8))
+#    plt.show()
 
 # To save the best model
 checkpointer = ModelCheckpoint(filepath=MODEL_FNAME, verbose=1, save_best_only=True, 

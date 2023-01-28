@@ -1,7 +1,7 @@
 from tensorflow.keras.models import Model
-from tensorflow.keras.utils import plot_model
 from tensorflow.keras.models import load_model
-from tensorflow.keras.layers import LayerNormalization, Dropout
+from tensorflow.keras.layers import Activation
+
 
 import re
 
@@ -46,7 +46,7 @@ def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
             else:
                 raise ValueError('position must be: before, after or replace')
 
-            new_layer = insert_layer_factory()
+            new_layer = Activation(insert_layer_factory)
             #if insert_layer_name:
             #    new_layer.name = insert_layer_name
             #else:
@@ -70,33 +70,6 @@ def insert_layer_nonseq(model, layer_regex, insert_layer_factory,
 
     return Model(inputs=model.inputs, outputs=model_outputs)
 
-
-init_model = "./models/35_1_not_trained.h5"
-
-# Model
-model = load_model(init_model)
-
-# Replace batch normalization by layer normalization
-#model = insert_layer_nonseq(model, "batch_norm.*", LayerNormalization, position="replace")
-
-#model.save('workingModel.h5')
-#model = load_model('workingModel.h5')
-
-#plot_model(model, to_file='modelLayerNormalization.png', show_shapes=True, show_layer_names=True)
-
-# Add Dropout after each convolution
-def returnDropout():
-    return Dropout(0.5)
-model = insert_layer_nonseq(model, ".*global.*", returnDropout, position="after")
-
-model.save('workingModel.h5')
-model = load_model('workingModel.h5')
-
-plot_model(model, to_file='modelDropout.png', show_shapes=True, show_layer_names=True)
-
-
-print("Number of parameters: ",  model.count_params())
-model.save('initialRemoved.h5')
 
 # Change activation
 def changeActivation(model, activation):
