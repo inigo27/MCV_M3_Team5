@@ -30,7 +30,7 @@ if not os.path.exists(folderHyper):
     os.makedirs(folderHyper)
 
 # Hyperparameter values
-batch_sizes = [8]#[8, 16, 32, 64, 128]
+batch_sizes = [8, 16, 32, 64, 128]
 number_of_epochs = [10, 50, 100]
 optimizersIndex = ["SGD", "RMSprop", "Adagrad", "Adadelta", "Adam", "Adamax", "Nadam"]
 optimizers = {"SGD": SGD, "RMSprop": RMSprop, "Adagrad": Adagrad, 
@@ -61,7 +61,7 @@ def train_network(trial):
     optimizerIndex = trial.suggest_categorical("optimizer", optimizersIndex)
     optimizer = optimizers[optimizerIndex]
     learning_rate = trial.suggest_categorical("learning_rate", learning_rates)
-    if optimizerIndex == "SGD" or optimizer == "RMSprop":
+    if optimizerIndex == "SGD" or optimizerIndex == "RMSprop":
         momentum = trial.suggest_categorical("momentum", momentums)
         opt = optimizer(learning_rate = learning_rate, momentum = momentum)
     else:
